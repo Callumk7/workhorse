@@ -28,16 +28,16 @@ async function processJob(job: Job) {
 	let url: string = "";
 	switch (job.type) {
 		case "artwork":
-			url = "/artwork";
+			url = "artwork";
 			break;
 		case "genre":
-			url = "/genres";
+			url = "genres";
 			break;
 		case "storyline":
-			url = "/games";
+			url = "games";
 			break;
 		case "rating":
-			url = "/games";
+			url = "games";
 			break;
 
 		default:
