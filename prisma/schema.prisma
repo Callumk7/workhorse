@@ -1,0 +1,117 @@
+// DO NOT EDIT! THIS IS NOT SOURCE OF TRUTH! FRONTLINE APP MAINTAINS PRISMA SCHEMA
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        Int                  @id @default(autoincrement())
+    userId    String               @unique
+    username  String               @unique
+    email     String               @unique
+    createdAt DateTime             @default(now())
+    updatedAt DateTime             @default(now()) @updatedAt
+    games     UserGameCollection[]
+    playlists Playlist[]
+}
+
+model Game {
+    id                    Int                  @id @default(autoincrement())
+    gameId                Int                  @unique
+    title                 String
+    createdAt             DateTime             @default(now())
+    updatedAt             DateTime             @updatedAt
+    cover                 Cover?
+    artworks              Artwork[]
+    screenshots           Screenshot[]
+    users                 UserGameCollection[]
+    genres                GenresOnGames[]
+    aggregatedRating      Float?
+    aggregatedRatingCount Int?
+    storyline             String?
+    releaseDate           Int?
+    playlists             PlaylistsOnGames[]
+}
+
+model UserGameCollection {
+    userId       String
+    gameId       Int
+    createdAt    DateTime @default(now())
+    deleted      Boolean  @default(false)
+    game         Game     @relation(fields: [gameId], references: [gameId])
+    user         User     @relation(fields: [userId], references: [userId])
+    played       Boolean  @default(false)
+    playerRating Int?
+    starred      Boolean  @default(false)
+
+    @@id([userId, gameId])
+}
+
+model Playlist {
+    id     Int                @id @default(autoincrement())
+    name   String
+    createdAt DateTime @default(now())
+    user   User               @relation(fields: [userId], references: [userId])
+    userId String
+    games  PlaylistsOnGames[]
+}
+
+model PlaylistsOnGames {
+    gameId     Int
+    playlistId Int
+    createdAt  DateTime @default(now())
+    game       Game     @relation(fields: [gameId], references: [gameId])
+    playlist   Playlist @relation(fields: [playlistId], references: [id])
+
+    @@id([gameId, playlistId])
+}
+
+model Genre {
+    id         Int             @id @default(autoincrement())
+    externalId Int             @unique
+    name       String
+    createdAt  DateTime        @default(now())
+    updatedAt  DateTime        @updatedAt
+    games      GenresOnGames[]
+}
+
+model GenresOnGames {
+    gameId    Int
+    genreId   Int
+    createdAt DateTime @default(now())
+    game      Game     @relation(fields: [gameId], references: [gameId])
+    genre     Genre    @relation(fields: [genreId], references: [id])
+
+    @@id([gameId, genreId])
+}
+
+model Cover {
+    id        Int      @id @default(autoincrement())
+    imageId   String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    gameId    Int      @unique
+    game      Game     @relation(fields: [gameId], references: [gameId])
+}
+
+model Artwork {
+    id        Int      @id @default(autoincrement())
+    imageId   String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    gameId    Int
+    game      Game     @relation(fields: [gameId], references: [gameId])
+}
+
+model Screenshot {
+    id        Int      @id @default(autoincrement())
+    imageId   String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    gameId    Int
+    game      Game     @relation(fields: [gameId], references: [gameId])
+}
