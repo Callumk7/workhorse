@@ -45,7 +45,7 @@ async function processJob(job: Job) {
 	}
 
 	await new Promise((resolve) => setTimeout(resolve, 5000));
-	const res = await fetch(`${process.env.FRONTLINE_URL}/api/${url}`, {
+	const res = await fetch(`${process.env.FRONTLINE_URL}/api/test`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
