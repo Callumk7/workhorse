@@ -14,7 +14,9 @@ const queue = async.queue((job: Job, callback) => {
 			callback();
 		})
 		.catch((err) => {
-			console.log(`Error processing job: ${err}`);
+			console.log(`Error processing job: ${job.id}, error: ${err}`);
+			queue.push(job);
+			console.log(`${job.id}: ${job.type} has been added to the end of the queue`);
 			callback(err);
 		});
 }, NUM_WORKERS);
@@ -23,8 +25,6 @@ queue.error((err, job) => {
 	console.log(`Error in job ${job.id}: ${err}`);
 });
 
-// Jobs are sent to the serverless environment for processing, based on the
-// job type. This should be pretty scaleable for now
 async function processJob(job: Job) {
 	let url: string = "";
 	switch (job.type) {
@@ -45,25 +45,18 @@ async function processJob(job: Job) {
 			break;
 	}
 
-	const res: Response = await axios.post(
+	const res = await axios.post(
 		`${process.env.FRONTLINE_URL}/api/${url}`,
 		JSON.stringify(job),
 	);
 
-	// const res = await fetch(`${process.env.FRONTLINE_URL}/api/test`, {
-	// 	method: "POST",
-	// 	headers: {
-	// 		"Content-Type": "application/json",
-	// 	},
-	// 	body: JSON.stringify(job),
-	// });
-
-	if (res.ok) {
-		console.log(`Job processed: ${job.id}`);
-		return "Processed Successfully";
+	if (res.status === 200) {
+		return `Job processed: ${job.id}`;
 	} else {
+		// I am pretty sure this code is unreachable, as it is thrown to the
+		// catch statement in the queue..
 		console.log(`Unable to process job ${job.id}, Status: ${res.status}`);
-		return "Process Failed";
+		return `Process Failed, ${job.id} added to queue`;
 	}
 }
 
@@ -74,7 +67,7 @@ export async function fetchJobs() {
 		console.log("looping..");
 		const rawJobBatch = await redis.lrange(JOB_QUEUE, 0, BATCH_SIZE - 1);
 		if (rawJobBatch.length === 0) {
-			await new Promise((resolve) => setTimeout(resolve, 5000));
+			await new Promise((resolve) => setTimeout(resolve, 8000));
 		} else if (rawJobBatch.length > 0) {
 			console.log(`jobs popped: ${rawJobBatch.length}`);
 			rawJobBatch.forEach((rawJob) => {
@@ -84,23 +77,3 @@ export async function fetchJobs() {
 		}
 	}
 }
-
-/*
-export async function processInitialJobs() {
-	let loop = true;
-	while (loop) {
-		const jobData = await redis.rpop(jobQueue);
-
-		if (jobData) {
-			console.log("jobdata from processInitialJobs:", jobData);
-			console.log(jobData.charCodeAt(0));
-			const job = JSON.parse(jobData);
-			await processJob(job);
-		} else {
-			loop = false;
-		}
-	}
-
-	listenForJobs();
-} 
-*/
