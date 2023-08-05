@@ -3,7 +3,7 @@ import redis from "./client";
 import async from "async";
 
 // CONSTANTS
-const NUM_WORKERS = 20;
+const NUM_WORKERS = 10;
 const JOB_QUEUE = "jobs";
 
 const queue = async.queue((job: Job, callback) => {
@@ -44,6 +44,7 @@ async function processJob(job: Job) {
 			break;
 	}
 
+	await new Promise((resolve) => setTimeout(resolve, 5000));
 	const res = await fetch(`${process.env.FRONTLINE_URL}/api/${url}`, {
 		method: "POST",
 		headers: {
@@ -62,7 +63,7 @@ async function processJob(job: Job) {
 }
 
 export async function fetchJobs() {
-	const BATCH_SIZE = 10;
+	const BATCH_SIZE = 2;
 	const loop = true;
 	while (loop) {
 		console.log("looping..");
