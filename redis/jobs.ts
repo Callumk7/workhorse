@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Job } from "../types";
 import redis from "./client";
 import async from "async";
@@ -44,14 +45,18 @@ async function processJob(job: Job) {
 			break;
 	}
 
-	await new Promise((resolve) => setTimeout(resolve, 5000));
-	const res = await fetch(`${process.env.FRONTLINE_URL}/api/test`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(job),
-	});
+	const res: Response = await axios.post(
+		`${process.env.FRONTLINE_URL}/api/${url}`,
+		JSON.stringify(job),
+	);
+
+	// const res = await fetch(`${process.env.FRONTLINE_URL}/api/test`, {
+	// 	method: "POST",
+	// 	headers: {
+	// 		"Content-Type": "application/json",
+	// 	},
+	// 	body: JSON.stringify(job),
+	// });
 
 	if (res.ok) {
 		console.log(`Job processed: ${job.id}`);
@@ -63,7 +68,7 @@ async function processJob(job: Job) {
 }
 
 export async function fetchJobs() {
-	const BATCH_SIZE = 2;
+	const BATCH_SIZE = 10;
 	const loop = true;
 	while (loop) {
 		console.log("looping..");
