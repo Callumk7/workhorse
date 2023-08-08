@@ -24,11 +24,7 @@ const getGameIds = async () => {
 	console.log("cache in sync");
 };
 
-try {
-	getGameIds();
-} catch (err) {
-	console.log("error syncing db on startup: ", err);
-}
+// getGameIds
 
 // process jobs in the queue
 fetchJobs().catch((err) => console.log(`Error fetching jobs: ${err}`));
