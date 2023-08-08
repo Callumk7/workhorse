@@ -24,7 +24,7 @@ const getGameIds = async () => {
 	console.log("cache in sync");
 };
 
-getGameIds();
+// getGameIds();
 
 // process jobs in the queue
 fetchJobs().catch((err) => console.log(`Error fetching jobs: ${err}`));

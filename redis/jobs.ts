@@ -13,10 +13,12 @@ const queue = async.queue((job: Job, callback) => {
 			console.log(`Job ${job.id} processed with result: ${result}`);
 			callback();
 		})
-		.catch((err) => {
+		.catch(async (err) => {
 			console.log(`Error processing job: ${job.id}, error: ${err}`);
-			queue.push(job);
-			console.log(`${job.id}: ${job.type} has been added to the end of the queue`);
+			const position = await redis.rpush(JSON.stringify(job));
+			console.log(
+				`${job.id}: ${job.type} has been added to the end of the queue, position: ${position}`,
+			);
 			callback(err);
 		});
 }, NUM_WORKERS);
