@@ -15,6 +15,7 @@ const queue = async.queue((job: Job, callback) => {
 		})
 		.catch(async (err) => {
 			console.log(`Error processing job: ${job.id}, error: ${err}`);
+			// this was fixed
 			const position = await redis.rpush(JOB_QUEUE, JSON.stringify(job));
 			console.log(
 				`${job.id}: ${job.type} has been added to the end of the queue, position: ${position}`,
